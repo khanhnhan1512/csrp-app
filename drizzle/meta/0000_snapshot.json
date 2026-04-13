@@ -1,0 +1,132 @@
+{
+  "id": "df15b213-5403-45dd-8dac-c951d37f007f",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.reports": {
+      "name": "reports",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "industry": {
+          "name": "industry",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "questionnaire_answers": {
+          "name": "questionnaire_answers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "category_scores": {
+          "name": "category_scores",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "composite_score": {
+          "name": "composite_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "suggested_csrp_low": {
+          "name": "suggested_csrp_low",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "suggested_csrp_high": {
+          "name": "suggested_csrp_high",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "override_csrp_low": {
+          "name": "override_csrp_low",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "override_csrp_high": {
+          "name": "override_csrp_high",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "generated_content": {
+          "name": "generated_content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "edited_content": {
+          "name": "edited_content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "analyst_notes": {
+          "name": "analyst_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
