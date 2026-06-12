@@ -168,13 +168,13 @@ export function ReportDetail({ report, onReportChange }: Props) {
                 <p className="text-sm">Generating report...</p>
               </div>
             ) : streamingContent !== null && streamingContent.length > 0 ? (
-              <div className="font-serif text-sm leading-relaxed whitespace-pre-wrap text-gray-800 min-h-[200px]">
+              <div className="font-[Arial,sans-serif] text-sm leading-relaxed whitespace-pre-wrap text-justify text-[#262626] min-h-[200px]">
                 {streamingContent}
                 <span className="inline-block w-1 h-4 bg-primary ml-0.5 animate-pulse" />
               </div>
             ) : displayContent ? (
               isFinalized ? (
-                <div className="font-serif text-sm leading-relaxed whitespace-pre-wrap text-gray-800">
+                <div className="font-[Arial,sans-serif] text-sm leading-relaxed whitespace-pre-wrap text-justify text-[#262626]">
                   {displayContent}
                 </div>
               ) : (
