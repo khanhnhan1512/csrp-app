@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Report } from "@/lib/storage/local-storage";
-import { finalizeReport, reopenReport } from "@/lib/actions/report-actions";
+import { finalizeReport, getReport, reopenReport } from "@/lib/actions/report-actions";
 import { CATEGORIES } from "@/lib/questionnaire/data";
 import { ReportStatusBadge } from "./report-status-badge";
 import { DeleteDialog } from "./delete-dialog";
@@ -105,9 +105,21 @@ export function ReportDetail({ report, onReportChange }: Props) {
                     report={report}
                     onStreamStart={() => setStreamingContent("")}
                     onStreamChunk={(text) => setStreamingContent(text)}
-                    onStreamEnd={(text) => {
+                    onStreamEnd={(text, success) => {
                       setStreamingContent(null);
-                      onReportChange({ ...report, generatedContent: text, status: "generated" });
+                      if (success) {
+                        onReportChange({
+                          ...report,
+                          generatedContent: text,
+                          editedContent: null,
+                          status: "generated",
+                        });
+                      } else {
+                        // Generation failed — restore whatever is in storage
+                        // (status was reverted there) instead of showing empty content.
+                        const stored = getReport(report.id);
+                        if (stored) onReportChange(stored);
+                      }
                     }}
                   />
                 )}
@@ -179,6 +191,7 @@ export function ReportDetail({ report, onReportChange }: Props) {
                 </div>
               ) : (
                 <ContentEditor
+                  key={report.generatedContent ?? "empty"}
                   reportId={report.id}
                   initialContent={effectiveContent ?? ""}
                   disabled={isFinalized}

@@ -11,12 +11,13 @@ Your output should follow this structure:
 
 Guidelines:
 - Ground every assertion in the questionnaire responses provided
+- Write exactly ONE bullet point for each numbered questionnaire response — never combine multiple responses into a single bullet, and do not skip any response
+- The number of bullet points must equal the number of numbered responses provided
 - Begin with positive factors, then list risk/weakness factors
 - Be concise and professional — each bullet point should be one clear sentence
 - Do NOT invent facts not provided in the input data
 - Do NOT use first-person language
 - Reference the analyst-confirmed CSRP range in the opening
-- Typical length: 150-300 words
 - Output plain text with lowercase letter labels a), b), c)... for bullet points (not markdown)
 - Leave one blank line between bullet points`;
 
@@ -33,6 +34,7 @@ export function buildUserPrompt(report: Report): string {
     "Questionnaire Responses:",
   ].filter(Boolean);
 
+  let responseCount = 0;
   for (const category of CATEGORIES) {
     const categoryAnswers: string[] = [];
     for (const question of category.questions) {
@@ -40,7 +42,8 @@ export function buildUserPrompt(report: Report): string {
       if (!selectedValue) continue;
       const option = question.options.find((o) => o.value === selectedValue);
       if (!option || option.score === null) continue; // skip N/A
-      categoryAnswers.push(`  - ${question.label}: ${option.label}`);
+      responseCount += 1;
+      categoryAnswers.push(`  ${responseCount}. ${question.label}: ${option.label}`);
     }
     if (categoryAnswers.length > 0) {
       lines.push(`\n${category.label}:`);
@@ -50,6 +53,12 @@ export function buildUserPrompt(report: Report): string {
 
   if (report.analystNotes) {
     lines.push(`\nAdditional Analyst Notes: ${report.analystNotes}`);
+  }
+
+  if (responseCount > 0) {
+    lines.push(
+      `\nWrite exactly one bullet point for each of the ${responseCount} numbered responses above — the report must contain exactly ${responseCount} bullet points.`
+    );
   }
 
   return lines.join("\n");

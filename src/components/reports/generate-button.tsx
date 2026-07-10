@@ -4,6 +4,16 @@ import { useState } from "react";
 import { updateReport } from "@/lib/actions/report-actions";
 import type { Report } from "@/lib/storage/local-storage";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { SparklesIcon, RefreshCwIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,11 +21,12 @@ interface Props {
   report: Report;
   onStreamStart?: () => void;
   onStreamChunk?: (text: string) => void;
-  onStreamEnd?: (text: string) => void;
+  onStreamEnd?: (text: string, success: boolean) => void;
 }
 
 export function GenerateButton({ report, onStreamStart, onStreamChunk, onStreamEnd }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const isRegenerate = ["generated", "edited"].includes(report.status);
   const canGenerate = ["draft", "generated", "edited"].includes(report.status);
@@ -55,37 +66,76 @@ export function GenerateButton({ report, onStreamStart, onStreamChunk, onStreamE
         onStreamChunk?.(fullText);
       }
 
-      // Save generated content to localStorage
-      updateReport(report.id, { generatedContent: fullText, status: "generated" });
+      // Save generated content; clear manual edits so the new content is
+      // what the report displays (editedContent takes display precedence).
+      updateReport(report.id, {
+        generatedContent: fullText,
+        editedContent: null,
+        status: "generated",
+      });
       toast.success("Report generated successfully");
-      onStreamEnd?.(fullText);
+      onStreamEnd?.(fullText, true);
     } catch (error) {
       // Revert status
       updateReport(report.id, { status: report.status === "generating" ? "draft" : report.status });
       toast.error(error instanceof Error ? error.message : "Generation failed. Please try again.");
-      onStreamEnd?.("");
+      onStreamEnd?.("", false);
     } finally {
       setIsGenerating(false);
     }
   };
 
+  const handleClick = () => {
+    // Regenerating discards manual edits — confirm before overwriting them.
+    if (isRegenerate && report.editedContent) {
+      setShowConfirm(true);
+    } else {
+      handleGenerate();
+    }
+  };
+
   return (
-    <Button
-      onClick={handleGenerate}
-      disabled={isGenerating}
-      variant={isRegenerate ? "outline" : "default"}
-    >
-      {isRegenerate ? (
-        <>
-          <RefreshCwIcon className={`w-4 h-4 mr-2 ${isGenerating ? "animate-spin" : ""}`} />
-          {isGenerating ? "Regenerating..." : "Regenerate"}
-        </>
-      ) : (
-        <>
-          <SparklesIcon className="w-4 h-4 mr-2" />
-          {isGenerating ? "Generating..." : "Generate Report"}
-        </>
-      )}
-    </Button>
+    <>
+      <Button
+        onClick={handleClick}
+        disabled={isGenerating}
+        variant={isRegenerate ? "outline" : "default"}
+      >
+        {isRegenerate ? (
+          <>
+            <RefreshCwIcon className={`w-4 h-4 mr-2 ${isGenerating ? "animate-spin" : ""}`} />
+            {isGenerating ? "Regenerating..." : "Regenerate"}
+          </>
+        ) : (
+          <>
+            <SparklesIcon className="w-4 h-4 mr-2" />
+            {isGenerating ? "Generating..." : "Generate Report"}
+          </>
+        )}
+      </Button>
+
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Regenerate Report</AlertDialogTitle>
+            <AlertDialogDescription>
+              Regenerating will replace the current content, including your manual edits. This
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowConfirm(false);
+                handleGenerate();
+              }}
+            >
+              Regenerate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

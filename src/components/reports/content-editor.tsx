@@ -49,7 +49,7 @@ export function ContentEditor({ reportId, initialContent, disabled, onContentCha
         value={content}
         onChange={(e) => handleChange(e.target.value)}
         disabled={disabled}
-        className="min-h-[400px] font-serif text-sm leading-relaxed resize-y"
+        className="min-h-[400px] font-[Arial,sans-serif] text-sm leading-relaxed resize-y"
         placeholder="Generated report content will appear here..."
       />
       {!disabled && content !== lastSaved && (

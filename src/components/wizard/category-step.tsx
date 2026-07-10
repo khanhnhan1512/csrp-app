@@ -19,9 +19,10 @@ interface Props {
 export function CategoryStep({ category, onNext, onBack }: Props) {
   const { answers, setAnswer } = useWizardStore();
 
+  // Answers are optional — unanswered questions default to "Not applicable" on submit.
   const schemaShape: Record<string, z.ZodString> = {};
   for (const q of category.questions) {
-    schemaShape[q.id] = z.string().min(1, "Please select an option");
+    schemaShape[q.id] = z.string();
   }
   const schema = z.object(schemaShape);
   type FormValues = z.infer<typeof schema>;
@@ -44,8 +45,14 @@ export function CategoryStep({ category, onNext, onBack }: Props) {
   const watchedValues = watch();
 
   function onSubmit(values: FormValues) {
-    for (const [qId, val] of Object.entries(values)) {
-      setAnswer(qId, val);
+    for (const question of category.questions) {
+      const val = values[question.id as keyof FormValues];
+      if (val) {
+        setAnswer(question.id, val);
+      } else {
+        const naOption = question.options.find((o) => o.score === null);
+        setAnswer(question.id, naOption?.value ?? "na");
+      }
     }
     onNext();
   }
@@ -55,7 +62,8 @@ export function CategoryStep({ category, onNext, onBack }: Props) {
       <CardHeader>
         <CardTitle>{category.label}</CardTitle>
         <CardDescription>
-          Select the option that best describes the company for each question.
+          Select the option that best describes the company for each question. Unanswered
+          questions default to &quot;Not applicable&quot;.
         </CardDescription>
       </CardHeader>
       <CardContent>
