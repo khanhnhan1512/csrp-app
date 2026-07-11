@@ -77,6 +77,7 @@ export function WizardShell() {
         {currentStep === 0 && <CompanyInfoStep onNext={nextStep} />}
         {currentStep >= 1 && currentStep <= CATEGORIES.length && (
           <CategoryStep
+            key={CATEGORIES[currentStep - 1].id}
             category={CATEGORIES[currentStep - 1]}
             onNext={nextStep}
             onBack={prevStep}

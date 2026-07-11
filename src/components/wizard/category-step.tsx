@@ -20,9 +20,9 @@ export function CategoryStep({ category, onNext, onBack }: Props) {
   const { answers, setAnswer } = useWizardStore();
 
   // Answers are optional — unanswered questions default to "Not applicable" on submit.
-  const schemaShape: Record<string, z.ZodString> = {};
+  const schemaShape: Record<string, z.ZodOptional<z.ZodString>> = {};
   for (const q of category.questions) {
-    schemaShape[q.id] = z.string();
+    schemaShape[q.id] = z.string().optional();
   }
   const schema = z.object(schemaShape);
   type FormValues = z.infer<typeof schema>;
