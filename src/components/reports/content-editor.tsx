@@ -20,12 +20,9 @@ export function ContentEditor({ reportId, initialContent, disabled, onContentCha
 
   useEffect(() => {
     if (debouncedContent !== lastSaved && !disabled) {
-      try {
-        updateReport(reportId, { editedContent: debouncedContent, status: "edited" });
-        setLastSaved(debouncedContent);
-      } catch {
-        toast.error("Failed to save changes");
-      }
+      updateReport(reportId, { editedContent: debouncedContent, status: "edited" })
+        .then(() => setLastSaved(debouncedContent))
+        .catch(() => toast.error("Failed to save changes"));
     }
   }, [debouncedContent, lastSaved, reportId, disabled]);
 

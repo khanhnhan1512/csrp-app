@@ -26,8 +26,13 @@ interface Props {
 export function DeleteDialog({ open, onClose, reportId, companyName, redirectAfter, onDeleted }: Props) {
   const router = useRouter();
 
-  const handleDelete = () => {
-    deleteReport(reportId);
+  const handleDelete = async () => {
+    try {
+      await deleteReport(reportId);
+    } catch {
+      toast.error("Failed to delete report");
+      return;
+    }
     toast.success("Report deleted");
     onClose();
     if (redirectAfter) {

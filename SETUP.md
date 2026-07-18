@@ -8,30 +8,26 @@
 
 ## 1. Supabase Setup
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to **Project Settings → Database → Connection pooling**
-3. Copy the **Connection string (Transaction mode)** — it looks like:
-   ```
-   postgresql://postgres.xxx:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
-   ```
-4. Go to **SQL Editor** and run the migration:
-   ```sql
-   -- Paste contents of: drizzle/0000_jazzy_anita_blake.sql
-   ```
+The app stores reports in a Supabase Postgres database, inside a dedicated
+`csrp` schema (the Supabase project may be shared with other apps).
+
+1. In the Supabase Dashboard, open **SQL Editor** and run the contents of
+   [`supabase-setup.sql`](./supabase-setup.sql) (creates the `csrp` schema,
+   the `reports` table, grants, and enables RLS).
+2. Go to **Settings → Data API → Exposed schemas** and add `csrp`, then save.
+3. Go to **Settings → API Keys** and copy the **secret key** (`sb_secret_...`).
 
 ## 2. Local Development
-
-```bash
-# Copy and edit .env.local
-cp .env.local.example .env.local
-# Add your DATABASE_URL from Supabase
-```
 
 Edit `.env.local`:
 ```
 OPENAI_API_KEY=your-key-here
-DATABASE_URL=postgresql://postgres.xxx:password@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_SECRET_KEY=sb_secret_...
 ```
+
+The secret key is server-only — it is never exposed to the browser. All report
+CRUD goes through Next.js Server Actions (`src/lib/actions/report-actions.ts`).
 
 ```bash
 npm install
@@ -41,25 +37,18 @@ npm run dev
 
 ## 3. Vercel Deployment
 
-```bash
-npx vercel link
-```
-
 Add environment variables in Vercel Dashboard → Project → Settings → Environment Variables:
 - `OPENAI_API_KEY`
-- `DATABASE_URL` (use the Supabase Transaction pooler URL)
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY`
+
+Deploys happen automatically on push to `master` (GitHub integration), or:
 
 ```bash
 npx vercel --prod
 ```
 
-## 4. Database Migration (if not using SQL Editor)
-
-```bash
-npm run db:migrate
-```
-
-## 5. Running Tests
+## 4. Running Tests
 
 ```bash
 npm run test
@@ -67,14 +56,15 @@ npm run test
 
 ## App Flow
 
-1. **Dashboard** → `/reports` — see all reports
+1. **Dashboard** → `/reports` — see all reports (shared across the team)
 2. **New Report** → `/reports/new` — 8-step wizard
    - Step 1: Company name, industry
-   - Steps 2-7: Risk questionnaire (6 categories, 20 questions)
+   - Steps 2-7: Risk questionnaire (6 categories, 20 questions; unanswered
+     questions default to "Not applicable")
    - Step 8: Review CSRP score, create report
 3. **Report Detail** → `/reports/[id]`
    - Override CSRP range if needed
    - Click **Generate Report** → streams AI-generated CSRP section
    - Edit content inline (auto-saves)
-   - **Copy** to clipboard for pasting into valuation report
+   - **Copy** to clipboard for pasting into valuation report (keeps Word formatting)
    - **Finalize** to lock the report

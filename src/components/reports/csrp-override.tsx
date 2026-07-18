@@ -29,7 +29,7 @@ export function CsrpOverride({
   const [low, setLow] = useState<string>(overrideLow?.toString() ?? "");
   const [high, setHigh] = useState<string>(overrideHigh?.toString() ?? "");
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const lowNum = parseFloat(low);
     const highNum = parseFloat(high);
 
@@ -46,17 +46,25 @@ export function CsrpOverride({
       return;
     }
 
-    updateReport(reportId, { overrideCsrpLow: lowNum, overrideCsrpHigh: highNum });
-    onOverrideChange?.(lowNum, highNum);
-    toast.success("CSRP range updated");
+    try {
+      await updateReport(reportId, { overrideCsrpLow: lowNum, overrideCsrpHigh: highNum });
+      onOverrideChange?.(lowNum, highNum);
+      toast.success("CSRP range updated");
+    } catch {
+      toast.error("Failed to save override");
+    }
   };
 
-  const handleClear = () => {
-    setLow("");
-    setHigh("");
-    updateReport(reportId, { overrideCsrpLow: null, overrideCsrpHigh: null });
-    onOverrideChange?.(null, null);
-    toast.success("Override cleared — using suggested range");
+  const handleClear = async () => {
+    try {
+      await updateReport(reportId, { overrideCsrpLow: null, overrideCsrpHigh: null });
+      setLow("");
+      setHigh("");
+      onOverrideChange?.(null, null);
+      toast.success("Override cleared — using suggested range");
+    } catch {
+      toast.error("Failed to clear override");
+    }
   };
 
   return (

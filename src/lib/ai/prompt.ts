@@ -1,4 +1,4 @@
-import type { Report } from "@/lib/storage/local-storage";
+import type { Report } from "@/lib/types/report";
 import { CATEGORIES } from "@/lib/questionnaire/data";
 import { selectExamples } from "./examples";
 

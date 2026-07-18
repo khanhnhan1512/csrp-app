@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { updateReport } from "@/lib/actions/report-actions";
-import type { Report } from "@/lib/storage/local-storage";
+import type { Report } from "@/lib/types/report";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -37,10 +37,9 @@ export function GenerateButton({ report, onStreamStart, onStreamChunk, onStreamE
     setIsGenerating(true);
     onStreamStart?.();
 
-    // Mark as generating in localStorage
-    updateReport(report.id, { status: "generating" });
-
     try {
+      await updateReport(report.id, { status: "generating" });
+
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,16 +67,23 @@ export function GenerateButton({ report, onStreamStart, onStreamChunk, onStreamE
 
       // Save generated content; clear manual edits so the new content is
       // what the report displays (editedContent takes display precedence).
-      updateReport(report.id, {
-        generatedContent: fullText,
-        editedContent: null,
-        status: "generated",
-      });
+      try {
+        await updateReport(report.id, {
+          generatedContent: fullText,
+          editedContent: null,
+          status: "generated",
+        });
+      } catch {
+        // Streamed text is already on screen — keep it visible instead of discarding.
+        toast.error("Report generated but saving failed. Copy the text before leaving this page.");
+        onStreamEnd?.(fullText, true);
+        return;
+      }
       toast.success("Report generated successfully");
       onStreamEnd?.(fullText, true);
     } catch (error) {
-      // Revert status
-      updateReport(report.id, { status: report.status === "generating" ? "draft" : report.status });
+      // Revert to the pre-generation status
+      await updateReport(report.id, { status: report.status }).catch(() => {});
       toast.error(error instanceof Error ? error.message : "Generation failed. Please try again.");
       onStreamEnd?.("", false);
     } finally {

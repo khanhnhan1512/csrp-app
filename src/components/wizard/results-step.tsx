@@ -36,9 +36,9 @@ export function ResultsStep({ onBack }: Props) {
   const { categoryScores, compositeScore, csrpLow, csrpHigh } = computeScores(answers);
 
   function handleCreate() {
-    startTransition(() => {
+    startTransition(async () => {
       try {
-        const report = createReport({
+        const report = await createReport({
           companyName,
           industry: industry || undefined,
           questionnaireAnswers: answers,
@@ -46,6 +46,7 @@ export function ResultsStep({ onBack }: Props) {
           compositeScore,
           suggestedCsrpLow: csrpLow,
           suggestedCsrpHigh: csrpHigh,
+          analystNotes: analystNotes || undefined,
         });
         toast.success("Report created successfully");
         reset();

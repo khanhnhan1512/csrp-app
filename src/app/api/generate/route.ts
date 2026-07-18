@@ -1,6 +1,6 @@
 import { streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import type { Report } from "@/lib/storage/local-storage";
+import type { Report } from "@/lib/types/report";
 import { SYSTEM_PROMPT, buildMessages } from "@/lib/ai/prompt";
 
 export const runtime = "nodejs";

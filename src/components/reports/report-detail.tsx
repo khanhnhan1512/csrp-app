@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { Report } from "@/lib/storage/local-storage";
+import type { Report } from "@/lib/types/report";
 import { finalizeReport, getReport, reopenReport } from "@/lib/actions/report-actions";
 import { CATEGORIES } from "@/lib/questionnaire/data";
 import { ReportStatusBadge } from "./report-status-badge";
@@ -38,9 +38,9 @@ export function ReportDetail({ report, onReportChange }: Props) {
   const effectiveContent = report.editedContent ?? report.generatedContent;
   const displayContent = streamingContent ?? effectiveContent;
 
-  const handleFinalize = () => {
+  const handleFinalize = async () => {
     try {
-      const updated = finalizeReport(report.id);
+      const updated = await finalizeReport(report.id);
       if (updated) onReportChange(updated);
       toast.success("Report finalized");
     } catch (e) {
@@ -48,10 +48,14 @@ export function ReportDetail({ report, onReportChange }: Props) {
     }
   };
 
-  const handleReopen = () => {
-    const updated = reopenReport(report.id);
-    if (updated) onReportChange(updated);
-    toast.success("Report reopened for editing");
+  const handleReopen = async () => {
+    try {
+      const updated = await reopenReport(report.id);
+      if (updated) onReportChange(updated);
+      toast.success("Report reopened for editing");
+    } catch {
+      toast.error("Failed to reopen report");
+    }
   };
 
   const answers = (report.questionnaireAnswers as Record<string, string>) || {};
@@ -105,7 +109,7 @@ export function ReportDetail({ report, onReportChange }: Props) {
                     report={report}
                     onStreamStart={() => setStreamingContent("")}
                     onStreamChunk={(text) => setStreamingContent(text)}
-                    onStreamEnd={(text, success) => {
+                    onStreamEnd={async (text, success) => {
                       setStreamingContent(null);
                       if (success) {
                         onReportChange({
@@ -115,9 +119,9 @@ export function ReportDetail({ report, onReportChange }: Props) {
                           status: "generated",
                         });
                       } else {
-                        // Generation failed — restore whatever is in storage
+                        // Generation failed — restore whatever is in the database
                         // (status was reverted there) instead of showing empty content.
-                        const stored = getReport(report.id);
+                        const stored = await getReport(report.id).catch(() => null);
                         if (stored) onReportChange(stored);
                       }
                     }}

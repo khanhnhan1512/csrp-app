@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ReportStatusBadge } from "./report-status-badge";
 import { DeleteDialog } from "./delete-dialog";
 import { Trash2Icon, BuildingIcon, CalendarIcon } from "lucide-react";
-import type { Report } from "@/lib/storage/local-storage";
+import type { Report } from "@/lib/types/report";
 
 interface Props {
   report: Report;

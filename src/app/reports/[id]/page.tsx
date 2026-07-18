@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getReport } from "@/lib/actions/report-actions";
-import type { Report } from "@/lib/storage/local-storage";
+import type { Report } from "@/lib/types/report";
 import { ReportDetail } from "@/components/reports/report-detail";
 
 export default function ReportPage() {
@@ -13,8 +14,9 @@ export default function ReportPage() {
 
   useEffect(() => {
     if (!id) return;
-    const found = getReport(id);
-    setReport(found ?? null);
+    getReport(id)
+      .then((found) => setReport(found ?? null))
+      .catch(() => setReport(null));
   }, [id]);
 
   // undefined = still loading (SSR hydration)
@@ -46,7 +48,7 @@ export default function ReportPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Report not found</h2>
-          <a href="/reports" className="text-primary underline text-sm">Back to reports</a>
+          <Link href="/reports" className="text-primary underline text-sm">Back to reports</Link>
         </div>
       </div>
     );

@@ -3,22 +3,28 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getReports } from "@/lib/actions/report-actions";
-import type { Report } from "@/lib/storage/local-storage";
+import type { Report } from "@/lib/types/report";
 import { ReportCard } from "@/components/reports/report-card";
 import { PlusIcon, FileTextIcon } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
 
+  const refresh = () => {
+    getReports()
+      .then(setReports)
+      .catch(() => toast.error("Failed to load reports"));
+  };
+
   useEffect(() => {
-    setReports(getReports());
+    refresh();
   }, []);
 
   // Refresh list when focus returns (user may have deleted/created on another page)
   useEffect(() => {
-    const onFocus = () => setReports(getReports());
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
   }, []);
 
   return (
@@ -64,7 +70,7 @@ export default function ReportsPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {reports.map((report) => (
-                <ReportCard key={report.id} report={report} onDeleted={() => setReports(getReports())} />
+                <ReportCard key={report.id} report={report} onDeleted={refresh} />
               ))}
             </div>
           </>
