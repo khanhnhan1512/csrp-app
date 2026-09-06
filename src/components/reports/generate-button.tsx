@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { updateReport } from "@/lib/actions/report-actions";
 import type { Report } from "@/lib/types/report";
+import { enforceFixedPhrases } from "@/lib/ai/fixed-phrases";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -55,15 +56,20 @@ export function GenerateButton({ report, onStreamStart, onStreamChunk, onStreamE
       if (!reader) throw new Error("No response body");
 
       const decoder = new TextDecoder();
-      let fullText = "";
+      let streamedText = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
-        fullText += chunk;
-        onStreamChunk?.(fullText);
+        streamedText += chunk;
+        onStreamChunk?.(streamedText);
       }
+
+      // Answers with mandated wording must read identically in every report,
+      // so correct the model's phrasing before it is shown or stored.
+      const fullText = enforceFixedPhrases(streamedText, report);
+      if (fullText !== streamedText) onStreamChunk?.(fullText);
 
       // Save generated content; clear manual edits so the new content is
       // what the report displays (editedContent takes display precedence).

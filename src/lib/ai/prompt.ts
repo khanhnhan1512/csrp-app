@@ -1,6 +1,7 @@
 import type { Report } from "@/lib/types/report";
 import { CATEGORIES } from "@/lib/questionnaire/data";
 import { selectExamples } from "./examples";
+import { getFixedPhrases } from "./fixed-phrases";
 
 export const SYSTEM_PROMPT = `You are a senior business valuator writing the Company-Specific Risk Premium (CSRP) section of a formal valuation report. You write in a professional, objective, third-person tone consistent with business valuation standards.
 
@@ -19,7 +20,9 @@ Guidelines:
 - Do NOT use first-person language
 - Reference the analyst-confirmed CSRP range in the opening
 - Output plain text with lowercase letter labels a), b), c)... for bullet points (not markdown)
-- Leave one blank line between bullet points`;
+- Leave one blank line between bullet points
+- Phrase each bullet in the house style of the worked examples: complete sentences, most opening with "The Company ...", each ending with a period
+- If a response carries MANDATORY WORDING, reproduce that sentence exactly, word for word, as that response's bullet — do not reword, shorten, expand, or merge it with another bullet`;
 
 export function buildUserPrompt(report: Report): string {
   const answers = (report.questionnaireAnswers as Record<string, string>) || {};
@@ -43,7 +46,10 @@ export function buildUserPrompt(report: Report): string {
       const option = question.options.find((o) => o.value === selectedValue);
       if (!option || option.score === null) continue; // skip N/A
       responseCount += 1;
-      categoryAnswers.push(`  ${responseCount}. ${question.label}: ${option.label}`);
+      const mandated = option.fixedText
+        ? `\n     MANDATORY WORDING — use this sentence verbatim: "${option.fixedText}"`
+        : "";
+      categoryAnswers.push(`  ${responseCount}. ${question.label}: ${option.label}${mandated}`);
     }
     if (categoryAnswers.length > 0) {
       lines.push(`\n${category.label}:`);
@@ -59,6 +65,16 @@ export function buildUserPrompt(report: Report): string {
     lines.push(
       `\nWrite exactly one bullet point for each of the ${responseCount} numbered responses above — the report must contain exactly ${responseCount} bullet points.`
     );
+  }
+
+  const fixedPhrases = getFixedPhrases(report);
+  if (fixedPhrases.length > 0) {
+    lines.push(
+      "\nThe following bullet points must appear verbatim, exactly as written, with no changes of any kind:"
+    );
+    for (const phrase of fixedPhrases) {
+      lines.push(`  - ${phrase.text}`);
+    }
   }
 
   return lines.join("\n");

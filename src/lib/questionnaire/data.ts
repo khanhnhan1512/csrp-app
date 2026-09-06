@@ -86,7 +86,13 @@ export const CATEGORIES: Category[] = [
         id: "customer_concentration",
         label: "Customer concentration",
         options: [
-          { label: "Diversified (no customer >20% revenue)", value: "diversified", score: 0 },
+          {
+            label: "Diversified (no customer >20% revenue)",
+            value: "diversified",
+            score: 0,
+            fixedText:
+              "Diversified customer base with no single customer contributing more than 20% of revenue.",
+          },
           { label: "Moderate (1–2 customers = 20–40% revenue)", value: "moderate", score: 1 },
           { label: "High (1–2 customers >40% revenue)", value: "high", score: 2 },
           { label: "Not applicable", value: "na", score: null },
@@ -197,7 +203,13 @@ export const CATEGORIES: Category[] = [
         id: "economic_sensitivity",
         label: "Economic sensitivity",
         options: [
-          { label: "Low (defensive/essential goods or services)", value: "low", score: 0 },
+          {
+            label: "Low (defensive/essential goods or services)",
+            value: "low",
+            score: 0,
+            fixedText:
+              "The Company's economic sensitivity is low, providing stability in downturns.",
+          },
           { label: "Moderate", value: "moderate", score: 1 },
           { label: "High (cyclical/discretionary spending)", value: "high", score: 2 },
           { label: "Not applicable", value: "na", score: null },

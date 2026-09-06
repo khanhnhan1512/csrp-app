@@ -151,11 +151,21 @@ describe("computeScores", () => {
 });
 
 describe("selectExamples", () => {
-  it("selects 2 examples closest to CSRP range midpoint", async () => {
+  it("selects the 3 examples closest to the CSRP range midpoint", async () => {
     const { selectExamples } = await import("@/lib/ai/examples");
     const examples = selectExamples(7, 9); // midpoint = 8 → closest are AICEIM [7,9] and Tourism [6,10]
-    expect(examples.length).toBe(2);
+    expect(examples.length).toBe(3);
     // First should be AICEIM with range [7,9] — midpoint 8 = distance 0
     expect(examples[0].csrpRange).toEqual([7, 9]);
+    expect(examples[1].csrpRange).toEqual([6, 10]);
+  });
+
+  it("prefers the richer 10-12% examples for a 10-12% range", async () => {
+    const { selectExamples } = await import("@/lib/ai/examples");
+    const examples = selectExamples(10, 12);
+    expect(examples.length).toBe(3);
+    for (const example of examples) {
+      expect(example.csrpRange).toEqual([10, 12]);
+    }
   });
 });
